@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import joblib
@@ -6,133 +5,174 @@ import time
 
 # --- Page Configuration ---
 st.set_page_config(
-    page_title="Real Estate Price Predictor",
-    page_icon="🏡",
+    page_title="Luxe Estate AI Predictor",
+    page_icon="💎",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
-# --- Caching the Model and Columns ---
-# Using st.cache_resource to load the model and columns only once
+# --- Model & Asset Loading ---
 @st.cache_resource
 def load_model_assets():
-    """Loads the trained model and the list of model columns from disk."""
+    """Loads the trained model and model columns from disk using joblib."""
     try:
         model = joblib.load('model.joblib')
         model_columns = joblib.load('model_columns.joblib')
         return model, model_columns
     except FileNotFoundError:
-        st.error("Model files not found! Please ensure 'model.joblib' and 'model_columns.joblib' are in the same directory.")
+        # This error is shown on the main page if files are missing
         return None, None
 
 model, model_columns = load_model_assets()
 
-# --- UI Styling ---
+# --- Advanced CSS Styling ---
 st.markdown("""
     <style>
+        /* --- General App Styling --- */
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
+
+        body {
+            font-family: 'Roboto', sans-serif;
+        }
+
         .main {
-            background-color: #F5F5F5;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 2rem;
         }
+
+        /* --- Title Styling --- */
+        h1 {
+            color: #1E3A8A; /* Deep Blue */
+            text-align: center;
+            font-weight: 700;
+        }
+        .stMarkdown p {
+             text-align: center;
+             color: #4A5568; /* Gray */
+        }
+
+        /* --- Input Card Styling --- */
+        .input-container {
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 20px;
+            padding: 2rem 3rem;
+            margin: 2rem auto;
+            max-width: 1000px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        /* --- Button Styling --- */
         .stButton>button {
-            background-color: #4CAF50;
+            background: linear-gradient(90deg, #4776E6 0%, #8E54E9 100%);
             color: white;
-            border-radius: 12px;
-            padding: 10px 24px;
-            font-size: 16px;
-            font-weight: bold;
+            border-radius: 50px;
+            padding: 12px 30px;
+            font-size: 18px;
+            font-weight: 700;
+            border: none;
+            transition: all 0.3s ease-in-out;
+            box-shadow: 0 4px 15px 0 rgba(71, 118, 230, 0.75);
+            display: block;
+            margin: 1.5rem auto 0 auto; /* Center the button */
         }
+        .stButton>button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px 0 rgba(142, 84, 233, 0.6);
+        }
+
+        /* --- Result Metric Styling --- */
         .stMetric {
             background-color: #FFFFFF;
-            border: 1px solid #E0E0E0;
+            border-left: 10px solid #4776E6;
             border-radius: 12px;
-            padding: 20px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
+
     </style>
 """, unsafe_allow_html=True)
 
 
-# --- Main Application ---
-st.title("🏡 Real Estate Price Predictor")
-st.markdown("Enter the details of a property to get an estimated market value. Our advanced model provides real-time predictions based on your inputs.")
+# --- Main Application Header ---
+st.title("💎 Luxe Estate AI Predictor")
+st.markdown("Provide property details below to receive a real-time market valuation powered by our predictive model.")
 st.markdown("---")
 
-
-# --- Sidebar for User Inputs ---
-with st.sidebar:
-    st.header("Enter Property Details")
+# --- Check if model files are loaded ---
+if model is None or model_columns is None:
+    st.error("🔴 Critical Error: Model files ('model.joblib', 'model_columns.joblib') not found. Please ensure they are in the app's root directory.")
+else:
+    # --- Input Section ---
+    # We wrap the inputs in a div with a custom class for styling
+    st.markdown('<div class="input-container">', unsafe_allow_html=True)
+    st.subheader("Property Feature Inputs")
 
     # IMPORTANT: Replace this list with the actual cities from your training data
-    # The order does not matter, but the names must be identical.
     CITIES_IN_MODEL = [
         'San Luis', 'Yorba Linda', 'Anaheim', 'Fullerton', 'Brea',
         'Newport Beach', 'Irvine', 'Santa Ana', 'Costa Mesa'
     ]
 
-    # --- Input Fields ---
-    area = st.slider("Area (sqft)", min_value=500, max_value=30000, value=2500, step=100)
-    bedrooms = st.slider("Bedrooms", min_value=1, max_value=10, value=4)
-    bathrooms = st.slider("Bathrooms", min_value=1, max_value=8, value=3)
-
-    st.markdown("---") # Visual separator
-
-    mainroad = st.selectbox("Is it on a Main Road?", ("Yes", "No"), index=0)
-    basement = st.selectbox("Does it have a Basement?", ("No", "Yes"), index=0)
-    parking = st.slider("Parking Spots", min_value=0, max_value=5, value=3)
-
-    st.markdown("---")
-
-    city = st.selectbox("City", options=CITIES_IN_MODEL)
-    street = st.text_input("Street Address", placeholder="e.g., 921 Isabella Way") # Note: Street is often not used in models
-
-    predict_button = st.button("Predict Price", use_container_width=True)
-
-
-# --- Prediction Logic and Display ---
-if predict_button and model is not None:
-    # 1. Create a dictionary from user inputs
-    input_data = {
-        'area': area,
-        'bedrooms': bedrooms,
-        'bathrooms': bathrooms,
-        'mainroad': 1 if mainroad == 'Yes' else 0,
-        'basement': 1 if basement == 'Yes' else 0,
-        'parking': parking,
-        'city': city,
-        # 'street' is not included as it's typically not a feature in the model
-        # If your model uses it, you must handle it similarly to 'city'.
-    }
-
-    # 2. Convert to a DataFrame
-    input_df = pd.DataFrame([input_data])
-
-    # 3. One-Hot Encode the 'city' column
-    input_df_encoded = pd.get_dummies(input_df, columns=['city'])
-
-    # 4. Align columns with the model's training columns
-    # This is the CRUCIAL step to avoid errors. It adds missing columns (with value 0)
-    # and ensures the order is the same as the model expects.
-    final_df = input_df_encoded.reindex(columns=model_columns, fill_value=0)
-
-    # 5. Make the prediction
-    with st.spinner('Calculating...'):
-        time.sleep(1) # Simulate a small delay for better user experience
-        prediction = model.predict(final_df)
-
-    # 6. Display the result
-    st.markdown("---")
-    col1, col2 = st.columns([1, 2])
-
+    # Row 1: Area, Bedrooms, Bathrooms, Parking
+    col1, col2, col3, col4 = st.columns(4)
     with col1:
-        st.image("https://i.imgur.com/J2g4Vha.png", width=200) # A simple house icon
-
+        area = st.number_input("Area (sqft)", min_value=500, max_value=30000, value=2500, step=100)
     with col2:
-        st.subheader("Predicted Property Value")
-        # Format the prediction as currency with the Rupee symbol
-        formatted_price = f"₹ {prediction[0]:,.0f}"
-        st.metric(label="Estimated Price", value=formatted_price)
-        st.success("The prediction is based on the features provided. Market conditions can influence the final price.")
+        bedrooms = st.slider("Bedrooms", min_value=1, max_value=10, value=4)
+    with col3:
+        bathrooms = st.slider("Bathrooms", min_value=1, max_value=8, value=3)
+    with col4:
+        parking = st.slider("Parking Spots", min_value=0, max_value=5, value=3)
 
-    st.balloons()
+    # Row 2: Mainroad, Basement
+    col5, col6 = st.columns(2)
+    with col5:
+        mainroad = st.selectbox("On Main Road?", ("Yes", "No"), index=0)
+    with col6:
+        basement = st.selectbox("Has Basement?", ("No", "Yes"), index=0)
 
-elif not model:
-    st.warning("Please make sure the model files are loaded correctly before trying to predict.")
+    # Row 3: City and Street (Dropdown for city, text for street)
+    col7, col8 = st.columns(2)
+    with col7:
+        city = st.selectbox("City", options=CITIES_IN_MODEL, help="Select the city from the list. This is a crucial feature for prediction.")
+    with col8:
+        street = st.text_input("Street Address", placeholder="e.g., 921 Isabella Way", help="Street address is for reference and not used in this model.")
+
+    # A single, centered predict button
+    predict_button = st.button("Calculate Estimated Value")
+
+    st.markdown('</div>', unsafe_allow_html=True) # Close the input-container div
+
+
+    # --- Prediction Logic and Display ---
+    if predict_button:
+        input_data = {
+            'area': area, 'bedrooms': bedrooms, 'bathrooms': bathrooms,
+            'mainroad': 1 if mainroad == 'Yes' else 0,
+            'basement': 1 if basement == 'Yes' else 0,
+            'parking': parking, 'city': city,
+        }
+        input_df = pd.DataFrame([input_data])
+        input_df_encoded = pd.get_dummies(input_df, columns=['city'])
+        final_df = input_df_encoded.reindex(columns=model_columns, fill_value=0)
+
+        with st.spinner('AI is crunching the numbers...'):
+            time.sleep(1)
+            prediction = model.predict(final_df)
+
+        st.markdown("---")
+        st.subheader("Prediction Result")
+        
+        col_img, col_price = st.columns([1, 2])
+        with col_img:
+            st.image("https://i.imgur.com/J2g4Vha.png", width=250)
+        with col_price:
+            formatted_price = f"₹ {prediction[0]:,.0f}"
+            st.metric(label="Estimated Property Value", value=formatted_price)
+            st.success("This prediction is based on the provided features and historical market data.")
+        
+        st.balloons()
+
