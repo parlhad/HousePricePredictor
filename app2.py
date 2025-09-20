@@ -46,7 +46,7 @@ st.markdown("""
 # --- Main Application Header ---
 st.title("💎 Luxe Estate AI Predictor")
 
-st.image("https://ibb.co/nMDWBX2K", caption="House Price Prediction",  use_container_width=True)
+st.image(""C:\Users\suraj\Downloads\WhatsApp Image 2025-09-20 at 16.00.59.jpeg"", caption="House Price Prediction",  use_container_width=True)
 
 
 st.markdown("Provide property details below to receive a real-time market valuation powered by our predictive model.")
