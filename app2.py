@@ -16,7 +16,9 @@ st.set_page_config(
 def load_model_assets():
     """Loads the trained model and model columns from disk using joblib."""
     try:
-        model = joblib.load('model.joblib')
+        # --- THIS IS THE LINE THAT WAS CHANGED ---
+        model = joblib.load('final_model.joblib') 
+        # -----------------------------------------
         model_columns = joblib.load('model_columns.joblib')
         return model, model_columns
     except FileNotFoundError:
@@ -103,7 +105,8 @@ st.markdown("---")
 
 # --- Check if model files are loaded ---
 if model is None or model_columns is None:
-    st.error("🔴 Critical Error: Model files ('model.joblib', 'model_columns.joblib') not found. Please ensure they are in the app's root directory.")
+    # --- UPDATED ERROR MESSAGE ---
+    st.error("🔴 Critical Error: Model files ('final_model.joblib', 'model_columns.joblib') not found. Please ensure they are in the app's root directory.")
 else:
     # --- Input Section ---
     # We wrap the inputs in a div with a custom class for styling
