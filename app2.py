@@ -5,8 +5,8 @@ import time
 
 # --- Page Configuration ---
 st.set_page_config(
-    page_title="Luxe Estate AI Predictor",
-    page_icon="💎",
+    page_title="House Price Predictor",
+    page_icon="🏠",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
