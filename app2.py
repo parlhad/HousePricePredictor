@@ -1,81 +1,51 @@
-import streamlit as st
-import pandas as pd
-import numpy as np
 import joblib
-import os
+import pandas as pd
+from sklearn.model_selection import train_test_split
 
-# --- Load the trained model and model columns ---
-MODEL_PATH = "model.joblib"
+# Assume you have a dataframe called 'df' with your raw data
+# Load your data (replace with your actual data loading)
+# df = pd.read_csv('your_data.csv')
+
+# --- Example Data Creation (replace with your actual data) ---
+data = {'area': [1000, 1500, 2000, 2500, 3000],
+        'bedrooms': [2, 3, 3, 4, 4],
+        'bathrooms': [1, 2, 2, 3, 3],
+        'mainroad': ['Yes', 'No', 'Yes', 'Yes', 'No'],
+        'basement': ['No', 'Yes', 'No', 'No', 'Yes'],
+        'parking': [1, 2, 2, 3, 3],
+        'city': ['A', 'B', 'A', 'C', 'B'],
+        'price': [100000, 150000, 200000, 250000, 300000]}
+df = pd.DataFrame(data)
+
+# --- Preprocessing (example: one-hot encoding) ---
+# Separate features (X) and target (y)
+X = df.drop('price', axis=1)
+y = df['price']
+
+# Apply one-hot encoding to categorical features
+X_encoded = pd.get_dummies(X, columns=['mainroad', 'basement', 'city'])
+
+# Get the list of column names after encoding
+model_columns = X_encoded.columns.tolist()
+
+# --- Save the list of column names ---
 MODEL_COLUMNS_PATH = "model_columns.joblib"
+joblib.dump(model_columns, MODEL_COLUMNS_PATH)
 
-if os.path.exists(MODEL_PATH) and os.path.exists(MODEL_COLUMNS_PATH):
-    model = joblib.load(MODEL_PATH)
-    model_columns = joblib.load(MODEL_COLUMNS_PATH)
-else:
-    st.error("⚠️ Model files not found. Please make sure model.joblib and model_columns.joblib are available.")
-    st.stop()
+print(f"'{MODEL_COLUMNS_PATH}' created successfully with the following columns:")
+print(model_columns)
 
-# --- App title ---
-st.title("🏡 Real Estate Price Predictor")
-st.markdown("Provide the property details in the sidebar to predict the house price.")
-
-# --- Sidebar Inputs ---
-with st.sidebar:
-    st.header("Enter Property Details")
-
-    # Cities and streets (replace with actual from your data/model)
-    CITIES_IN_MODEL = [
-        'San Luis', 'Yorba Linda', 'Anaheim', 'Fullerton', 'Brea',
-        'Newport Beach', 'Irvine', 'Santa Ana', 'Costa Mesa'
-    ]
-
-    STREETS_IN_MODEL = [
-        'Isabella Way', 'Harbor Blvd', 'Main Street', 'Sunset Ave', 'Broadway'
-    ]
-
-    # --- Input Fields (increment/decrement buttons instead of sliders) ---
-    area = st.number_input("Area (sqft)", min_value=500, max_value=30000, value=2500, step=100)
-    bedrooms = st.number_input("Bedrooms", min_value=1, max_value=10, value=4, step=1)
-    bathrooms = st.number_input("Bathrooms", min_value=1, max_value=8, value=3, step=1)
-
-    st.markdown("---")
-
-    mainroad = st.selectbox("Is it on a Main Road?", ("Yes", "No"), index=0)
-    basement = st.selectbox("Does it have a Basement?", ("No", "Yes"), index=0)
-    parking = st.number_input("Parking Spots", min_value=0, max_value=5, value=3, step=1)
-
-    st.markdown("---")
-
-    city = st.selectbox("City", options=CITIES_IN_MODEL)
-    street = st.selectbox("Street", options=STREETS_IN_MODEL)  # Dropdown instead of text box
-
-    predict_button = st.button("Predict Price", use_container_width=True)
-
-# --- Prediction Logic ---
-if predict_button:
-    try:
-        # Prepare input data
-        input_data = {
-            'area': area,
-            'bedrooms': bedrooms,
-            'bathrooms': bathrooms,
-            'mainroad': 1 if mainroad == 'Yes' else 0,
-            'basement': 1 if basement == 'Yes' else 0,
-            'parking': parking,
-            'city': city
-            # street is not used in model unless trained with it
-        }
-
-        # One-hot encode categorical variables to match model training
-        input_df = pd.DataFrame([input_data])
-        input_encoded = pd.get_dummies(input_df).reindex(columns=model_columns, fill_value=0)
-
-        # Predict price
-        prediction = model.predict(input_encoded)[0]
-
-        # Display results
-        st.success(f"🏠 Predicted House Price: *${prediction:,.2f}*")
-        st.info(f"📍 Location: {street}, {city}")
-
-    except Exception as e:
-        st.error(f"⚠️ Error during prediction: {e}")
+# --- Train your model (example: using Linear Regression) ---
+# from sklearn.linear_model import LinearRegression
+#
+# # Split data into training and testing sets
+# X_train, X_test, y_train, y_test = train_test_split(X_encoded, y, test_size=0.2, random_state=42)
+#
+# # Initialize and train the model
+# # model = LinearRegression()
+# # model.fit(X_train, y_train)
+#
+# # --- Save the trained model ---
+# # MODEL_PATH = "model.joblib"
+# # joblib.dump(model, MODEL_PATH)
+# # print(f"'{MODEL_PATH}' created successfully.")
