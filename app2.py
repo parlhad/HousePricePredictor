@@ -11,49 +11,25 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-
-# ------------------------------------------------------------------------------------
-# --- CRITICAL STEP: HARD-CODED COLUMN LIST ---
-# ------------------------------------------------------------------------------------
-# You MUST replace the example list below with the actual list of columns
-# from your training data AFTER one-hot encoding.
-# To get this list, run `X_encoded.columns.tolist()` in your training notebook.
-MODEL_TRAINING_COLUMNS = [
-    'area',
-    'bedrooms',
-    'bathrooms',
-    'mainroad',
-    'basement',
-    'parking',
-    'city_Anaheim',
-    'city_Brea',
-    'city_Costa Mesa',
-    'city_Fullerton',
-    'city_Irvine',
-    'city_Newport Beach',
-    'city_San Luis',
-    'city_Santa Ana',
-    'city_Yorba Linda'
-]
-# ------------------------------------------------------------------------------------
-
-
-# --- Model Loading (Updated to only load one file) ---
+# --- Model & Asset Loading ---
+# This is the most robust way: load the model and its required columns from files.
 @st.cache_resource
-def load_model():
-    """Loads the trained model from disk using joblib."""
+def load_model_assets():
+    """Loads the trained model and model columns from disk using joblib."""
     try:
-        model = joblib.load('final_model.joblib')
-        return model
+        # Note: Ensure your model file is named 'model.joblib' in your repository
+        model = joblib.load('model.joblib')
+        model_columns = joblib.load('model_columns.joblib')
+        return model, model_columns
     except FileNotFoundError:
-        return None
+        # This error will show if either file is missing from the repository
+        return None, None
 
-model = load_model()
+model, model_columns = load_model_assets()
 
 # --- Advanced CSS Styling ---
 st.markdown("""
     <style>
-        /* CSS from previous version - remains unchanged */
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
         body { font-family: 'Roboto', sans-serif; }
         .main { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); padding: 2rem; }
@@ -72,19 +48,22 @@ st.title("💎 Luxe Estate AI Predictor")
 st.markdown("Provide property details below to receive a real-time market valuation powered by our predictive model.")
 st.markdown("---")
 
-# --- Check if model file is loaded ---
-if model is None:
-    st.error("🔴 Critical Error: Model file ('final_model.joblib') not found. Please ensure it is in the app's root directory.")
+# --- Check if model files are loaded correctly ---
+if model is None or model_columns is None:
+    st.error("🔴 Critical Error: Model files ('model.joblib', 'model_columns.joblib') not found. Please verify they are correctly named and uploaded to your GitHub repository.")
 else:
     # --- Input Section ---
     st.markdown('<div class="input-container">', unsafe_allow_html=True)
     st.subheader("Property Feature Inputs")
 
+    # IMPORTANT: This list should contain the cities your model was trained on.
+    # It provides the options for the dropdown menu.
     CITIES_IN_MODEL = [
         'San Luis', 'Yorba Linda', 'Anaheim', 'Fullerton', 'Brea',
         'Newport Beach', 'Irvine', 'Santa Ana', 'Costa Mesa'
     ]
 
+    # --- Input fields arranged in a grid ---
     col1, col2, col3, col4 = st.columns(4)
     with col1:
         area = st.number_input("Area (sqft)", min_value=500, max_value=30000, value=2500, step=100)
@@ -103,26 +82,29 @@ else:
 
     col7, col8 = st.columns(2)
     with col7:
-        city = st.selectbox("City", options=CITIES_IN_MODEL)
+        city = st.selectbox("City", options=CITIES_IN_MODEL, help="Select the city. This is a crucial feature for prediction.")
     with col8:
-        street = st.text_input("Street Address", placeholder="e.g., 921 Isabella Way", help="Street address is not used in this model.")
+        street = st.text_input("Street Address", placeholder="e.g., 921 Isabella Way", help="Street address is for reference and is not used in this model.")
 
     predict_button = st.button("Calculate Estimated Value")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # --- Prediction Logic ---
+    # --- Prediction Logic and Display ---
     if predict_button:
+        # Create a dictionary from the user's input
         input_data = {
             'area': area, 'bedrooms': bedrooms, 'bathrooms': bathrooms,
             'mainroad': 1 if mainroad == 'Yes' else 0,
             'basement': 1 if basement == 'Yes' else 0,
             'parking': parking, 'city': city,
         }
+        
+        # Convert to a DataFrame and apply one-hot encoding
         input_df = pd.DataFrame([input_data])
         input_df_encoded = pd.get_dummies(input_df, columns=['city'])
         
-        # --- THIS LINE NOW USES THE HARD-CODED LIST ---
-        final_df = input_df_encoded.reindex(columns=MODEL_TRAINING_COLUMNS, fill_value=0)
+        # Align the input data with the training columns using the loaded list
+        final_df = input_df_encoded.reindex(columns=model_columns, fill_value=0)
 
         with st.spinner('AI is crunching the numbers...'):
             time.sleep(1)
@@ -137,6 +119,7 @@ else:
         with col_price:
             formatted_price = f"₹ {prediction[0]:,.0f}"
             st.metric(label="Estimated Property Value", value=formatted_price)
-            st.success("This prediction is based on historical market data.")
+            st.success("This prediction is based on historical market data and the features provided.")
         
         st.balloons()
+
