@@ -56,23 +56,31 @@ else:
     st.markdown('<div class="input-container">', unsafe_allow_html=True)
     st.subheader("Property Feature Inputs")
 
-    # IMPORTANT: This list should contain the cities your model was trained on.
-    # It provides the options for the dropdown menu.
+    # IMPORTANT: These lists should contain the options your model was trained on.
     CITIES_IN_MODEL = [
         'San Luis', 'Yorba Linda', 'Anaheim', 'Fullerton', 'Brea',
         'Newport Beach', 'Irvine', 'Santa Ana', 'Costa Mesa'
     ]
+    # Add your actual street names to this list
+    STREETS_IN_MODEL = [
+        '921 Isabella Way', '123 Main St', '456 Oak Ave', '789 Pine Ln',
+        '101 Maple Dr', '212 Birch Rd' # Replace with your actual street data
+    ]
+
 
     # --- Input fields arranged in a grid ---
     col1, col2, col3, col4 = st.columns(4)
     with col1:
         area = st.number_input("Area (sqft)", min_value=500, max_value=30000, value=2500, step=100)
     with col2:
-        bedrooms = st.slider("Bedrooms", min_value=1, max_value=10, value=4)
+        # CHANGED from st.slider to st.number_input
+        bedrooms = st.number_input("Bedrooms", min_value=1, max_value=10, value=4, step=1)
     with col3:
-        bathrooms = st.slider("Bathrooms", min_value=1, max_value=8, value=3)
+        # CHANGED from st.slider to st.number_input
+        bathrooms = st.number_input("Bathrooms", min_value=1, max_value=8, value=3, step=1)
     with col4:
-        parking = st.slider("Parking Spots", min_value=0, max_value=5, value=3)
+        # CHANGED from st.slider to st.number_input
+        parking = st.number_input("Parking Spots", min_value=0, max_value=5, value=3, step=1)
 
     col5, col6 = st.columns(2)
     with col5:
@@ -84,7 +92,8 @@ else:
     with col7:
         city = st.selectbox("City", options=CITIES_IN_MODEL, help="Select the city. This is a crucial feature for prediction.")
     with col8:
-        street = st.text_input("Street Address", placeholder="e.g., 921 Isabella Way", help="Street address is for reference and is not used in this model.")
+        # CHANGED from st.text_input to st.selectbox
+        street = st.selectbox("Street Address", options=STREETS_IN_MODEL, help="Street address is for reference and is not used in this model.")
 
     predict_button = st.button("Calculate Estimated Value")
     st.markdown('</div>', unsafe_allow_html=True)
