@@ -47,7 +47,7 @@ st.markdown("""
 st.title("🏠 House Price Predictor")
 
 st.image(
-    "https://drive.google.com/file/d/1LsKU8x99H9VLJ0IXOaS1Iot5-_Yb7iM1/view?usp=sharing",
+    "https://i.imgur.com/5uV6n4G.jpeg",
     caption='Let our AI find the value of your next home.',
     use_column_width=True
 )
