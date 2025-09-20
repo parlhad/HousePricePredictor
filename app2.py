@@ -44,7 +44,7 @@ st.markdown("""
 
 
 # --- Main Application Header ---
-st.title("🏠 Luxe Estate AI Predictor")
+st.title("🏠 House Price Predictor")
 st.markdown("Provide property details below to receive a real-time market valuation powered by our predictive model.")
 st.markdown("---")
 
