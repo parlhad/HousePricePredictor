@@ -45,6 +45,13 @@ st.markdown("""
 
 # --- Main Application Header ---
 st.title("🏠 House Price Predictor")
+
+st.image(
+    "https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+    caption='Let our AI find the value of your next home.',
+    use_column_width=True
+)
+
 st.markdown("Provide property details below to receive a real-time market valuation powered by our predictive model.")
 st.markdown("---")
 
@@ -124,11 +131,12 @@ else:
         
         col_img, col_price = st.columns([1, 2])
         with col_img:
-            st.image("https://www.vecteezy.com/photo/24624814-real-estate-market-prices", width=250)
+            st.image("https://i.imgur.com/J2g4Vha.png", width=250)
         with col_price:
             formatted_price = f"₹ {prediction[0]:,.0f}"
             st.metric(label="Estimated Property Value", value=formatted_price)
             st.success("This prediction is based on historical market data and the features provided.")
         
         st.balloons()
+
 
