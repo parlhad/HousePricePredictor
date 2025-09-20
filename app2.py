@@ -47,7 +47,7 @@ st.markdown("""
 st.title("💎 Luxe Estate AI Predictor")
 
 st.image(
-    "https://i.imgur.com/5uV6n4G.jpeg",
+    "https://postimg.cc/jWkp4ns0",
     caption='Understanding the rising cost of living and its impact on housing.',
     use_container_width=True
 )
