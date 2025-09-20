@@ -124,7 +124,7 @@ else:
         
         col_img, col_price = st.columns([1, 2])
         with col_img:
-            st.image("https://i.imgur.com/J2g4Vha.png", width=250)
+            st.image("https://www.vecteezy.com/photo/24624814-real-estate-market-prices", width=250)
         with col_price:
             formatted_price = f"₹ {prediction[0]:,.0f}"
             st.metric(label="Estimated Property Value", value=formatted_price)
