@@ -5,8 +5,8 @@ import time
 
 # --- Page Configuration ---
 st.set_page_config(
-    page_title="House Price Predictor",
-    page_icon="🏠",
+    page_title="Luxe Estate AI Predictor",
+    page_icon="💎",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
@@ -44,12 +44,12 @@ st.markdown("""
 
 
 # --- Main Application Header ---
-st.title("🏠 House Price Predictor")
+st.title("💎 Luxe Estate AI Predictor")
 
 st.image(
-    "https://ibb.co/nMDWBX2K",
-    caption='Let our AI find the value of your next home.',
-    use_column_width=True
+    "https://i.imgur.com/5uV6n4G.jpeg",
+    caption='Understanding the rising cost of living and its impact on housing.',
+    use_container_width=True
 )
 
 st.markdown("Provide property details below to receive a real-time market valuation powered by our predictive model.")
