@@ -3,7 +3,7 @@ import pandas as pd
 import joblib
 
 # --- LOAD THE SAVED FILES ---
-# Make sure 'final_model.joblib' and 'preprocessor.joblib' are in the same folder as your app
+# Make sure 'model.joblib' and 'preprocessor.joblib' are in the same folder as your app
 try:
     model = joblib.load('model.joblib')
     preprocessor = joblib.load('preprocessor.joblib')
